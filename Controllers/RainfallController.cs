@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using RainfallAPI.components.responses;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
@@ -59,8 +60,9 @@ namespace RainfallAPI.Controllers
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    
-                    return Ok(content);
+
+                    var responseData = JsonConvert.DeserializeObject<rainfallReadingResponse>(content);
+                    return Ok(responseData);
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {

@@ -4,7 +4,7 @@ namespace RainfallAPI.components.responses
 {
     public class rainfallReadingResponse
     {
-        [JsonProperty("readings")]
+        [JsonProperty("items")]
         public List<rainfallReading> Readings { get; set; }
     }
 }
