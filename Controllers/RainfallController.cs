@@ -59,19 +59,47 @@ namespace RainfallAPI.Controllers
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    // You can parse the content or return it directly
+                    
                     return Ok(content);
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    return NotFound(new ErrorResponse { Message = "No readings found for the specified stationId", Detail = new List<string> { "404" } });
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                {
+                    return BadRequest(new ErrorResponse { Message = "Invalid request", Detail = new List<string>{"400"} });
                 }
                 else
                 {
+                    var errorResponse = new ErrorResponse
+                    {
+                        Message = "Internal server error",
+                        Detail = new List<string> { $"{(int)response.StatusCode}" }
+                    };
                     _logger.LogError($"Failed to fetch data. Status code: {response.StatusCode}");
-                    return StatusCode((int)response.StatusCode);
+                    return StatusCode((int)response.StatusCode, errorResponse);
                 }
+            }
+            catch (HttpRequestException ex)
+            {
+                var errorResponse = new ErrorResponse
+                {
+                    Message = "An error occurred while fetching data",
+                    Detail = new List<string> { ex.Message }
+                };
+                _logger.LogError($"An error occurred while fetching data: {ex.Message}");
+                return StatusCode(500, errorResponse);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"An error occurred while fetching data: {ex.Message}");
-                return StatusCode(500, "An error occurred while fetching data.");
+                var errorResponse = new ErrorResponse
+                {
+                    Message = "An unexpected error occurred",
+                    Detail = new List<string> { ex.Message }
+                };
+                _logger.LogError($"An unexpected error occurred: {ex.Message}");
+                return StatusCode(500, errorResponse);
             }
         }
     }
